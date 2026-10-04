@@ -55,7 +55,8 @@
     "ngrok"
   ],
   "dependencies": {
-    "dsh-browser-polyfill": "^1.0.0"
+    "dsh-browser-polyfill": "^1.0.0",
+    "qrcode": "^1.5.4"
   },
   "dsh": {
     "client": {

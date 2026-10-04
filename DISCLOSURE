@@ -90,13 +90,21 @@ the end user's own request, from the end user's own phone.
     operator enters themselves. No third-party service is contacted for
     it.
 
-2.7 Third-party request
-    The desktop-side configuration panel renders the access QR code by
-    loading an image from https://api.qrserver.com/v1/create-qr-code/ .
-    That request sends the operator-entered access URL to that public
-    service. This is the only outbound request to a third party in the
-    package. No other capability contacts any external host; the screen,
-    input, file and proxy paths are all loopback-only.
+2.7 QR code rendering
+    The configuration panel displays QR codes so the operator can open the
+    access URL, or download the bundled app, with a phone camera. These
+    are generated **locally**: lib/qr.js encodes them with the MIT
+    `qrcode` library and the bundled screen server returns the PNG from
+    http://127.0.0.1:8092/remote-qr . Nothing is sent to any external
+    service.
+
+    Upstream used to load these images from a public QR web service
+    (api.qrserver.com), which both depended on reachability of a foreign
+    host and disclosed the operator's access URL to it. This fork removed
+    that dependency.
+
+    The package therefore makes NO outbound request to any third party.
+    The screen, input, file, proxy and QR paths are all loopback-only.
 
 
 3. INTENDED LEGITIMATE USE
@@ -131,11 +139,12 @@ machine the operator does not own or is not authorised to control.
   cookies, tokens or keystrokes. The input-injection path only *sends*
   synthetic keystrokes to the local desktop at the operator's request;
   there is no keylogging or capture path in the codebase.
-- It does not contact any command-and-control or analytics endpoint. The
-  only third-party request is the QR image described in 2.7.
+- It does not contact any command-and-control or analytics endpoint, and
+  makes no outbound request to any third party at all. QR codes are
+  generated locally (see 2.7).
 - It does not obfuscate or encrypt its own code. lib/index.js,
-  lib/client.js, lib/screen.ps1 and lib/helper.ps1 are plain readable
-  JS/PowerShell shipped as-is.
+  lib/client.js, lib/qr.js, lib/screen.ps1 and lib/helper.ps1 are plain
+  readable JS/PowerShell shipped as-is.
 - It does not contain a cryptocurrency miner, ransomware, a
   self-propagation mechanism, or code that acts without operator intent.
 
@@ -163,7 +172,8 @@ Reviewed honestly, this package is not hardened:
 6. FORK CHANGES RELATIVE TO UPSTREAM
 ------------------------------------
 
-Two changes, both bug fixes; no functionality added or removed.
+Four changes: one UI rework, one dependency removal, and two bug fixes.
+No capability was added or removed.
 
 a) DSH 0.2.x authentication (lib/index.js, marked `[PATCH harness-auth]`)
    Upstream rewrote Host/Origin/Referer and forwarded, with no cookie or
@@ -179,6 +189,20 @@ b) Client module identifier (lib/client.js)
    package name, so with the package renamed the plugin failed to load
    and, on DSH 0.2.0-rc.2, took the host application's startup down with
    it. It is now "dsh-remote-control-desktop".
+
+c) Local QR generation (new lib/qr.js, lib/index.js route /remote-qr)
+   Replaces the upstream dependency on a public QR image service, as
+   described in 2.7. Adds one dependency, `qrcode` (MIT), used
+   host-side only. No new capability: upstream already displayed these
+   QR codes, just via a third party.
+
+d) Configuration panel reworked (lib/client.js)
+   Upstream showed an always-visible draggable box in the bottom-left
+   corner of the page. It is now a "远程访问" row in the sidebar footer
+   that opens a modal panel on click. The entry is a clone of the native
+   "会话管理" row with only its icon and label swapped, so it inherits
+   DSH's own styling. No capability changed; the same controls are
+   present.
 
 
 7. CONTACT
