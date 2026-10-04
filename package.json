@@ -1,0 +1,64 @@
+{
+  "name": "dsh-remote-control-desktop",
+  "version": "1.6.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "description": "DSH 手机远程访问 + 远程桌面：内置本地代理(8090)+配置面板+远程屏幕/鼠标/键盘。配合任意内网穿透工具（cpolar/frp/ngrok等）把公网URL转发到 127.0.0.1:8090 即可用手机浏览器远程使用本机 Harness。本包为 dsh-remote-desktop 的修复分支，已修补 DSH 0.2.x browser-auth 导致的 401（dsh web authentication required）。",
+  "license": "MIT",
+  "author": "ayout",
+  "contributors": [
+    "xiongjie771017 (upstream author of dsh-remote-desktop)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Assuredfive/dsh-remote-control-desktop.git"
+  },
+  "homepage": "https://github.com/Assuredfive/dsh-remote-control-desktop#readme",
+  "bugs": {
+    "url": "https://github.com/Assuredfive/dsh-remote-control-desktop/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "remote",
+    "remote-desktop",
+    "remote-control",
+    "手机",
+    "远程",
+    "远程桌面",
+    "远程控制",
+    "内网穿透",
+    "cpolar",
+    "frp",
+    "ngrok"
+  ],
+  "dependencies": {
+    "dsh-browser-polyfill": "^1.0.0"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

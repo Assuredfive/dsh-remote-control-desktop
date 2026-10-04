@@ -1,0 +1,4 @@
+# dsh-remote-control-desktop bundle patch: register the remote-access plugin.
+- insert:
+    - id: remote
+      name: 'dsh-remote-control-desktop'
