@@ -198,11 +198,13 @@ c) Local QR generation (new lib/qr.js, lib/index.js route /remote-qr)
 
 d) Configuration panel reworked (lib/client.js)
    Upstream showed an always-visible draggable box in the bottom-left
-   corner of the page. It is now a "远程访问" row in the sidebar footer
-   that opens a modal panel on click. The entry is a clone of the native
-   "会话管理" row with only its icon and label swapped, so it inherits
-   DSH's own styling. No capability changed; the same controls are
-   present.
+   corner of the page. It is now a "远程访问" entry in the sidebar footer
+   that opens a modal panel on click, registered through the host's own
+   public slot API (sidebar.footer.action) - the same mechanism the
+   session-manager entry uses. If that slot is unavailable the code falls
+   back to a DOM button, and finally to a fixed floating button, so the
+   entry cannot silently disappear. No capability changed; the same
+   controls are present.
 
 
 7. CONTACT
