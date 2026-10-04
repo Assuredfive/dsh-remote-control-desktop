@@ -1,6 +1,6 @@
 {
   "name": "dsh-remote-control-desktop",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -10,6 +10,9 @@
   "contributors": [
     "xiongjie771017 (upstream author of dsh-remote-desktop)"
   ],
+  "contentPolicy": {
+    "class": "dual-use"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Assuredfive/dsh-remote-control-desktop.git"
@@ -32,7 +35,8 @@
     "lib",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "DISCLOSURE"
   ],
   "keywords": [
     "dsh",

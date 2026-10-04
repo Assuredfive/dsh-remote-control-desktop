@@ -1,0 +1,192 @@
+DISCLOSURE
+==========
+
+Package : dsh-remote-control-desktop
+Repo    : https://github.com/Assuredfive/dsh-remote-control-desktop
+License : MIT
+
+This file is provided in accordance with the npm Dual-Use Content Policy
+(https://docs.npmjs.com/policies/dual-use). The package's package.json
+declares:
+
+    "contentPolicy": { "class": "dual-use" }
+
+Purpose of this file is to describe, accurately and in full, the
+security-relevant capabilities the package ships and the legitimate use
+they are intended for.
+
+
+1. WHAT THIS PACKAGE IS
+-----------------------
+
+A plugin for DeepSeek Harness (DSH), a locally-run AI coding assistant
+for Windows. It lets the owner of a PC reach their own DSH instance, and
+view/control their own desktop, from a phone browser while physically
+away from the machine.
+
+This package is a fork of the MIT-licensed package `dsh-remote-desktop`
+by xiongjie771017 (https://www.npmjs.com/package/dsh-remote-desktop).
+The dual-use capabilities described in section 2 are inherited from that
+upstream package. This fork adds no new capability; see section 6 for the
+one behavioural fix it contains.
+
+
+2. DUAL-USE CAPABILITIES
+------------------------
+
+The package contains the following capabilities, which are the reason it
+is declared dual-use. All of them act on the end user's own machine, at
+the end user's own request, from the end user's own phone.
+
+2.1 Local HTTP reverse proxy  (lib/index.js)
+    Binds 127.0.0.1:8090 and forwards requests to the local DSH web
+    server. It also routes /remote-* paths to the screen service on
+    127.0.0.1:8092. It binds the loopback interface only; it does not
+    open a port on any other interface. It is the operator who
+    separately configures a tunneling tool (cpolar / frp / ngrok /
+    similar) to expose it, if they choose to.
+
+2.2 Remote screen capture  (lib/screen.ps1)
+    A PowerShell worker that captures the Windows desktop and encodes
+    frames as JPEG, streamed to the connected phone. Capture is
+    demand-driven and stops ~3 seconds after the last viewer request.
+
+2.3 Input injection  (lib/index.js, lib/screen.ps1)
+    Moves the local mouse cursor, performs clicks, sends keystrokes and
+    text, and scrolls, on the local machine. Commands originate from the
+    authenticated phone session.
+
+2.4 Local file transfer  (lib/index.js)
+    Lists, downloads, uploads and zips files on the local machine.
+    By default the browsable root is the user's home directory.
+
+2.5 Optional Windows unlock service  (lib/dsh-unlock-svc.exe,
+    lib/dsh-unlock-helper.exe, lib/install-unlock-service.bat,
+    lib/task.xml)
+    Windows deliberately ignores synthetic input on the lock screen, so
+    remote control cannot dismiss it. To work around that, upstream
+    ships a small prebuilt Windows service, `DSHRemoteUnlock`, which can
+    inject the user's own PIN into the locked session.
+
+    Installing it is MANUAL and requires the operator to double-click
+    lib/install-unlock-service.bat and accept a UAC elevation prompt.
+    The script then:
+      - copies both .exe files into C:\Windows\System32\
+      - creates the service with `sc create ... start= auto`
+        (LocalSystem account, starts at boot)
+      - starts it and verifies it over the named pipe
+        `\\.\pipe\dsh-remote-unlock`
+    task.xml is an equivalent Task Scheduler definition (runs as
+    S-1-5-18, i.e. SYSTEM, at boot) for operators who install it that
+    way instead.
+
+    The package never installs this service by itself. Remote screen,
+    input and file transfer all work without it; only lock-screen
+    unlock and lock-state display require it.
+
+2.6 Bundled Android app  (lib/dsh-remote.apk)
+    A prebuilt WebView wrapper, shipped so the operator can install a
+    convenience client on their own phone. It points at a URL the
+    operator enters themselves. No third-party service is contacted for
+    it.
+
+2.7 Third-party request
+    The desktop-side configuration panel renders the access QR code by
+    loading an image from https://api.qrserver.com/v1/create-qr-code/ .
+    That request sends the operator-entered access URL to that public
+    service. This is the only outbound request to a third party in the
+    package. No other capability contacts any external host; the screen,
+    input, file and proxy paths are all loopback-only.
+
+
+3. INTENDED LEGITIMATE USE
+--------------------------
+
+Use by a machine's own owner, on their own machine, to reach it from
+their own phone: checking on a long-running build or agent session,
+reading the screen, transferring a file, or using their own DSH instance
+while away from the desk. It is functionally in the same category as
+TeamViewer, AnyDesk, Chrome Remote Desktop, RustDesk and VNC servers,
+which are similarly dual-use and similarly shipped as installable
+remote-control software.
+
+The package is not intended for, and must not be used for, accessing any
+machine the operator does not own or is not authorised to control.
+
+
+4. WHAT THIS PACKAGE DOES NOT DO
+--------------------------------
+
+- It does not bind to any non-loopback interface. Both listeners
+  (lib/index.js:1101 and lib/index.js:1105) are explicitly bound to
+  "127.0.0.1". Exposure to a network happens only if the operator
+  configures a separate tunneling tool to forward to 127.0.0.1:8090.
+- It does not install, register or start anything by itself. The
+  LocalSystem service in 2.5 exists only if the operator manually runs
+  install-unlock-service.bat and approves UAC. Nothing runs as SYSTEM
+  from a plain `npm install`.
+- It does not run any install lifecycle script. The package declares no
+  preinstall / install / postinstall / prepare script.
+- It does not collect, harvest or exfiltrate credentials, browser data,
+  cookies, tokens or keystrokes. The input-injection path only *sends*
+  synthetic keystrokes to the local desktop at the operator's request;
+  there is no keylogging or capture path in the codebase.
+- It does not contact any command-and-control or analytics endpoint. The
+  only third-party request is the QR image described in 2.7.
+- It does not obfuscate or encrypt its own code. lib/index.js,
+  lib/client.js, lib/screen.ps1 and lib/helper.ps1 are plain readable
+  JS/PowerShell shipped as-is.
+- It does not contain a cryptocurrency miner, ransomware, a
+  self-propagation mechanism, or code that acts without operator intent.
+
+
+5. SECURITY POSTURE (disclosed for completeness)
+------------------------------------------------
+
+Reviewed honestly, this package is not hardened:
+
+- The 8090 proxy performs NO authentication of its own. It rewrites
+  Host/Origin/Referer and forwards. Anyone who can reach it, can drive
+  the machine, including the file-transfer endpoints, which resolve
+  arbitrary absolute paths on the local filesystem. The package's README
+  therefore instructs the operator to enable authentication on the
+  tunneling tool itself (cpolar "Http Auth", frp http_user/http_pwd,
+  ngrok --basic-auth) and warns that omitting it exposes the machine's
+  screen, input and entire filesystem to the internet.
+- The bundled .exe files are prebuilt binaries from upstream. They are
+  shipped as-is and cannot be audited from this repository; only the
+  .bat installer and task.xml that register them are readable here.
+- Screen frames and input commands travel over plain HTTP on loopback
+  and are not additionally encrypted by the plugin.
+
+
+6. FORK CHANGES RELATIVE TO UPSTREAM
+------------------------------------
+
+Two changes, both bug fixes; no functionality added or removed.
+
+a) DSH 0.2.x authentication (lib/index.js, marked `[PATCH harness-auth]`)
+   Upstream rewrote Host/Origin/Referer and forwarded, with no cookie or
+   token handling at all, so DSH 0.2.x's authority-bound signed-cookie
+   gate rejected every request arriving via a tunnel with "dsh web
+   authentication required". The proxy now redeems a `dsh-auth-*` cookie
+   through ctx.connection.authenticatedUrl() and attaches it to
+   forwarded requests (HTTP and WebSocket upgrade).
+
+b) Client module identifier (lib/client.js)
+   The upstream client bundle registers itself as "dsh-remote-desktop",
+   its old package name. DSH requires that identifier to equal the npm
+   package name, so with the package renamed the plugin failed to load
+   and, on DSH 0.2.0-rc.2, took the host application's startup down with
+   it. It is now "dsh-remote-control-desktop".
+
+
+7. CONTACT
+----------
+
+Questions about this package: open an issue at
+https://github.com/Assuredfive/dsh-remote-control-desktop/issues
+
+This declaration is accurate to the best of the maintainer's knowledge
+at the time of publishing. The declaration and this file persist across
+all subsequent versions, as required by the npm Dual-Use Content Policy.
