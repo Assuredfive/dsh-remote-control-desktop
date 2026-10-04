@@ -1,6 +1,6 @@
 {
   "name": "dsh-remote-control-desktop",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "engines": {
     "node": ">=22.12.0"
   },

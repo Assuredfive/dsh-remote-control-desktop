@@ -8,9 +8,9 @@
 ## 〇、关于本包
 
 本包是 [`dsh-remote-desktop`](https://www.npmjs.com/package/dsh-remote-desktop)（作者 **xiongjie771017**，MIT）的**修复分支**，由 **ayout** 维护。
-功能与上游一致，**没有增删任何功能**，只做了一处必要修复：
+功能与上游一致，**没有增删任何功能**，只做必要修复：
 
-> **修复：DSH 0.2.x 下手机经穿透访问必然 401（`dsh web authentication required; reopen the URL printed by dsh web.`）**
+> **修复 1：DSH 0.2.x 下手机经穿透访问必然 401（`dsh web authentication required; reopen the URL printed by dsh web.`）**
 >
 > DSH 0.2.x 的 browser-auth 是「绑定 authority 的签名 cookie，回环不豁免」，而本插件的 8090 代理只改写
 > `Host/Origin/Referer` 再转发，没有任何 cookie/token 逻辑，所以经隧道进来的请求一律被 DSH 拒绝。
@@ -18,9 +18,24 @@
 > `dsh-auth-*` cookie，再挂到转发请求上（HTTP 与 WebSocket upgrade 两处）。
 > 代码中有 `[PATCH harness-auth]` 标记，可搜索定位。
 
+> **修复 2（v1.6.2）：改包名后客户端半边无法注册，导致 DSH 启动失败**
+>
+> `lib/client.js` 里 `window.__ModuleLoader__.load({ id })` 的 `id` **必须等于 npm 包名**（DSH 用它把客户端
+> bundle 对应回宿主插件）。上游包名是 `dsh-remote-desktop`，本分支改名后该值没跟着改，于是 DSH 报
+> `client-modules: duplicate factory registration for "dsh-remote-desktop"` →
+> `web boot: 1 entry did not activate` → 应用无法启动。
+> v1.6.2 已把该 `id` 改为 `dsh-remote-control-desktop`。
+
 上游版权归原作者，本分支的修改同样以 **MIT** 发布，详见 [LICENSE](./LICENSE)。
 
 > ⚠️ **本插件自身不做身份验证**——公网安全完全依赖穿透工具的认证。请务必读完并执行[第七节「安全须知」](#七安全须知务必读)。
+
+### 更新日志
+
+| 版本 | 变更 |
+|---|---|
+| **1.6.2** | 修复 `lib/client.js` 的模块 `id`，使其等于包名 `dsh-remote-control-desktop`。1.6.1 装了会导致 DSH 无法启动，请勿使用。 |
+| **1.6.1** | 首个发布版本：基于上游 1.6.1，含 `[PATCH harness-auth]` 401 修复。 |
 
 ---
 
