@@ -40,10 +40,25 @@
 
 | 版本 | 变更 |
 |---|---|
-| **1.6.4** | ① 电脑端面板改为**侧边栏入口 + 点击弹出**（原先是一个常驻可拖拽悬浮框，挡视线）：入口走 DSH 官方 `sidebar.footer.action` 插槽（与「会话管理」同机制，侧栏折叠时自动变成纯图标），点开是整屏式弹窗，开关改为拨动开关。② 二维码改为**本机生成**（`lib/qr.js`），不再依赖 `api.qrserver.com` 外链，输入地址即实时预览。③ **主题跟随**：运行时探测 DSH 当前主题并镜像到 `<html data-dsr-theme>`，用自带的两套色板渲染 —— 不依赖 `--dsw-alias-*`（其中 `bg-elevated`/`fill-l2`/`accent-*`/`danger` 等根本没有定义，会导致深色主题下一块深一块浅）。④ 新增 npm dual-use 声明（`contentPolicy` 字段 + `DISCLOSURE` 文件）。 |
+| **1.6.4** | ① 电脑端面板改为**侧边栏入口 + 点击弹出**（原先是一个常驻可拖拽悬浮框，挡视线）：入口走 DSH 官方 `sidebar.footer.action` 插槽（与「会话管理」同机制，侧栏折叠时自动变成纯图标），点开是整屏式弹窗，开关改为拨动开关。② 二维码改为**本机生成**（`lib/qr.js`），不再依赖 `api.qrserver.com` 外链，输入地址即实时预览。③ **主题跟随**：运行时探测 DSH 当前主题并镜像到 `<html data-dsr-theme>`，用自带的两套色板渲染 —— 不依赖 `--dsw-alias-*`（其中 `bg-elevated`/`fill-l2`/`accent-*`/`danger` 等根本没有定义，会导致深色主题下一块深一块浅）。④ 新增 npm dual-use 声明（`contentPolicy` 字段 + `DISCLOSURE` 文件）。⑤ **正式上线 npm**（2026-10-07，`dist-tags.latest` 即本版本）。 |
 | **1.6.3** | 内容与 1.6.2 相同（1.6.2 在 npm 侧未上线，改用新版本号重发）。 |
 | **1.6.2** | 修复 `lib/client.js` 的模块 `id`，使其等于包名 `dsh-remote-control-desktop`。 |
-| **1.6.1** | 首个发布版本：基于上游 1.6.1，含 `[PATCH harness-auth]` 401 修复。**该版本会导致 DSH 无法启动，请勿安装。** |
+| **1.6.1** | 首个发布版本：基于上游 1.6.1，含 `[PATCH harness-auth]` 401 修复。**该版本会导致 DSH 无法启动，请勿安装**（npm 侧已随整包下架，版本号永久作废、不可复用）。 |
+
+#### npm 发布记录
+
+| 项 | 值 |
+|---|---|
+| 包名 | [`dsh-remote-control-desktop`](https://www.npmjs.com/package/dsh-remote-control-desktop) |
+| 当前线上版本 | **1.6.4**（`dist-tags.latest`） |
+| 上线时间 | 2026-10-07 15:04:41（北京时间）/ `2026-10-07T07:04:41Z` |
+| 安装 | `npm install dsh-remote-control-desktop@1.6.4`；作为 DSH profile 依赖写 `"dsh-remote-control-desktop": "^1.6.4"` |
+| 校验值 | sha1 `a4d3c1d6a23cf6fc57a8294da7eb55bed225d48b`，tarball 157,018 字节 / 16 个文件 |
+| 必须保留 | `package.json` 的 `"contentPolicy": { "class": "dual-use" }` 与包根 [DISCLOSURE](./DISCLOSURE)（[双用途政策](https://docs.npmjs.com/policies/dual-use)要求，移除会被拒发） |
+| 发布方式 | 2FA（passkey）为强制要求；本版本经 `npm stage publish` → `npm stage approve <stage-id>` 落地（staged 发布把 2FA 推迟到 approve 一步） |
+
+> registry 元数据刚发布时 `dist-tags.latest` 指向的 tarball 可能短暂 404（CDN 负缓存，约 5 分钟），
+> 稍等或用 `--registry=https://registry.npmjs.org/` 重试即可，**不要**因此重发或下架。
 
 ---
 
